@@ -1,0 +1,18 @@
+@keyframes backgroundAnimation {
+	0% {
+	  background-position: 0% 50%;
+	}
+	50% {
+	  background-position: 100% 50%;
+	}
+	100% {
+	  background-position: 0% 50%;
+	}
+  }
+  
+  body {
+	background-image: linear-gradient(to right, #ff512f, #dd2476);
+	background-size: 200% auto;
+	animation: backgroundAnimation 10s linear infinite;
+  }
+  
