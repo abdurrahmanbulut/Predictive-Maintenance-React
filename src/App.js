@@ -64,6 +64,7 @@ function App() {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
+        // "https://abdurrahmanbulut.pythonanywhere.com/predict",
         "http://127.0.0.1:5000/predict",
         fields
       );
