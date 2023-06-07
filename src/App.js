@@ -21,15 +21,27 @@ function App() {
   const [fields, setFields] = useState(Array(5).fill(""));
   const [open, setOpen] = useState(false);
   const labels = ["Age", "Volt", "Pressure", "Rotation", "Vibration"];
-  const text = "Analyzing.. and done.. Your component1 and component2 seem to be broken soon. Check them please.";
+  const text =
+    "Enter values about each related part and click Predict button. If your file has multiple data of a machine, the program will" +
+    "check all components but you will see only first row data in input fields. ";
+
+  const age_of_machine = "Age: Age of the machine";
+  const volt_info = "Volt: Voltage value of the machine";
+  const pres_info = "Pressure: Pressure value of the machine";
+  const rot_info = "Rotation: Rotation value of the machine";
+  const vib_info = "Vibration: Vibration value of the machine";
 
   const handleChange = (index, event) => {
-    const val = event.target.value;
-    if (/^\d*\.?\d*$/.test(val)) {
-      // Check if it's a valid number or with decimals
-      setFields(fields.map((field, i) => (i === index ? val : field)));
+  const val = event.target.value;
+  if (/^\d*\.?\d*$/.test(val)) {
+    // Check if it's a valid number or with decimals
+    if (index === 0 && parseFloat(val) < 0) {
+      console.error("Age must be greater than or equal to 0");
+      return; // Exit the function to prevent setting the state
     }
-  };
+    setFields(fields.map((field, i) => (i === index ? val : field)));
+  }
+};
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -52,7 +64,7 @@ function App() {
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        "https://abdurrahmanbulut.pythonanywhere.com/predict",
+        "http://127.0.0.1:5000/predict",
         fields
       );
       const prediction = response.data.prediction;
@@ -131,6 +143,7 @@ function App() {
             {/* Right side */}
             <Box
               display="flex"
+              flexDirection={"column"}
               justifyContent="center"
               alignItems="center"
               sx={{
@@ -143,15 +156,19 @@ function App() {
                 borderRadius: "2rem",
               }}
             >
-              <Typing >
-                {text}
-              </Typing>
+              <Typing>{age_of_machine}</Typing>
+              <Typing>{volt_info}</Typing>
+              <Typing>{pres_info}</Typing>
+              <Typing>{rot_info}</Typing>
+              <Typing>{vib_info}</Typing>
+              <br></br>
+              <Typing>{text}</Typing>
             </Box>
           </Grid>
         </Grid>
 
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
-          <DialogTitle> 
+          <DialogTitle>
             Input Values
             <IconButton
               edge="end"
