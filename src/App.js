@@ -44,7 +44,9 @@ function App() {
         console.error("Age must be greater than or equal to 0");
         return; // Exit the function to prevent setting the state
       }
-      setFields(fields.map((field, i) => (i === index ? val : field)));
+      const updatedFields = [...fields]; // Create a shallow copy of the fields state
+      updatedFields[0][index] = parseFloat(val); // Update the specific input value
+      setFields(updatedFields); // Update the state with the new fields
     }
   };
 
