@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogContent,
   IconButton,
+  LinearProgress,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import * as XLSX from "xlsx";
@@ -18,9 +19,13 @@ import "./background.css";
 import Typing from "react-typing-animation";
 
 function App() {
-  const [fields, setFields] = useState(Array(5).fill(""));
+  const [fields, setFields] = useState([Array(5).fill(0)]);
   const [open, setOpen] = useState(false);
   const labels = ["Age", "Volt", "Pressure", "Rotation", "Vibration"];
+  const [counts, setCounts] = useState({});
+
+  const [c0Percentage, setC0Percentage] = useState(0);
+
   const text =
     "Enter values about each related part and click Predict button. If your file has multiple data of a machine, the program will" +
     "check all components but you will see only first row data in input fields. ";
@@ -32,18 +37,19 @@ function App() {
   const vib_info = "Vibration: Vibration value of the machine";
 
   const handleChange = (index, event) => {
-  const val = event.target.value;
-  if (/^\d*\.?\d*$/.test(val)) {
-    // Check if it's a valid number or with decimals
-    if (index === 0 && parseFloat(val) < 0) {
-      console.error("Age must be greater than or equal to 0");
-      return; // Exit the function to prevent setting the state
+    const val = event.target.value;
+    if (/^\d*\.?\d*$/.test(val)) {
+      // Check if it's a valid number or with decimals
+      if (index === 0 && parseFloat(val) < 0) {
+        console.error("Age must be greater than or equal to 0");
+        return; // Exit the function to prevent setting the state
+      }
+      setFields(fields.map((field, i) => (i === index ? val : field)));
     }
-    setFields(fields.map((field, i) => (i === index ? val : field)));
-  }
-};
+  };
 
   const handleFileUpload = (event) => {
+    setFields([Array(5).fill(0)]);
     const file = event.target.files[0];
     const reader = new FileReader();
     reader.onload = function (e) {
@@ -51,25 +57,52 @@ function App() {
       const workbook = XLSX.read(data, { type: "array" });
       const worksheet = workbook.Sheets[workbook.SheetNames[0]];
       const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-      const newFields = jsonData[0].slice(2); // Skip the first two columns
+      const newFields = jsonData.slice(1).map((row) => row.slice(2)); // Skip the first row and the first two columns for each row
       setFields(newFields);
     };
     reader.readAsArrayBuffer(file);
   };
 
   const handleClear = () => {
-    setFields(Array(5).fill(""));
+    setFields([Array(5).fill(0)]);
   };
 
   const handleSubmit = async () => {
     try {
       const response = await axios.post(
-        // "https://abdurrahmanbulut.pythonanywhere.com/predict",
+        //"https://abdurrahmanbulut.pythonanywhere.com/predict",
         "http://127.0.0.1:5000/predict",
         fields
       );
       const prediction = response.data.prediction;
+      const counts = response.data.counts;
+
       console.log(prediction); // print the prediction
+      console.log(counts); // print the prediction
+      // Calculate percentage for c0
+      const totalCount = Object.values(counts).reduce(
+        (acc, val) => acc + val,
+        0
+      );
+      const newC0Percentage = Math.round((counts["c0"] / totalCount) * 100);
+      console.log(counts["c0"]);
+      console.log(totalCount);
+      setC0Percentage(newC0Percentage);
+
+      // Update counts based on conditions
+      Object.entries(counts).forEach(([key, value]) => {
+        if (value > 1) {
+          counts[key] = 2;
+        } else if (value === 1) {
+          counts[key] = 1;
+        } else {
+          counts[key] = 0;
+        }
+      });
+
+      setCounts(counts);
+
+      console.log(fields);
 
       setOpen(true);
     } catch (error) {
@@ -106,7 +139,7 @@ function App() {
                 fullWidth
                 label={label}
                 variant="outlined"
-                value={fields[index]}
+                value={fields[0][index]}
                 onChange={(event) => handleChange(index, event)}
                 sx={{ mb: 2 }}
               />
@@ -170,7 +203,7 @@ function App() {
 
         <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md">
           <DialogTitle>
-            Input Values
+            Risk Analysis
             <IconButton
               edge="end"
               color="inherit"
@@ -188,12 +221,82 @@ function App() {
               fontFamily: "Arial, sans-serif",
               fontSize: "18px",
               color: "#333",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
             }}
           >
-            {labels.map((label, index) => (
-              <Typography key={label}>
-                {label}: {fields[index]}
-              </Typography>
+            <Typography variant="subtitle1" sx={{ mt: 4 }}>
+              Health status of the machine: {c0Percentage}%
+            </Typography>
+            {Object.entries(counts).map(([key, value]) => (
+              <div key={key}>
+                {key === "c0" ? (
+                  <>
+                  
+                    <LinearProgress
+                      variant="determinate"
+                      value={c0Percentage}
+                      sx={{
+                        height: "2rem",
+                        borderRadius: "1rem",
+                        mt: 2,
+                        mb: 4,
+                        backgroundColor: "white",
+                        "& .MuiLinearProgress-bar": {
+                          backgroundColor: "green",
+                        },
+                      }}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Typography>
+                      {key === "c1"
+                        ? value === 0
+                          ? "Component 1 looks good!"
+                          : value === 1
+                          ? "Component 1 may have a problem."
+                          : "Crucial, Check component 1 asap."
+                        : key === "c2"
+                        ? value === 0
+                          ? "Component 2 looks good!"
+                          : value === 1
+                          ? "Component 2 may have a problem."
+                          : "Crucial, Check component 2 asap."
+                        : key === "c3"
+                        ? value === 0
+                          ? "component 3 looks good!"
+                          : value === 1
+                          ? "Component 3 may have a problem."
+                          : "Crucial, Check component 3 asap."
+                        : key === "c4"
+                        ? value === 0
+                          ? "Component 4 looks good!"
+                          : value === 1
+                          ? "Component 4 may have a problem."
+                          : "Crucial, Check component 4 asap."
+                        : null}
+                    </Typography>
+                    <LinearProgress
+                      variant="determinate"
+                      value={value * 1000}
+                      sx={{
+                        height: "2rem",
+                        borderRadius: "1rem",
+                        mt: 2,
+                        mb: 4,
+                        backgroundColor:
+                          value === 0
+                            ? "green !important"
+                            : value === 1
+                            ? "orange !important"
+                            : "red !important",
+                      }}
+                    />
+                  </>
+                )}
+              </div>
             ))}
           </DialogContent>
         </Dialog>
