@@ -27,7 +27,7 @@ function App() {
   const [c0Percentage, setC0Percentage] = useState(0);
 
   const text =
-    "Enter values about each related part and click Predict button. If your file has multiple data of a machine, the program will" +
+    "Enter values about each related part and click Predict button. If your file has multiple data of a machine, the program will " +
     "check all components but you will see only first row data in input fields. ";
 
   const age_of_machine = "Age: Age of the machine";
