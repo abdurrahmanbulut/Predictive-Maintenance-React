@@ -86,7 +86,49 @@ function App() {
         (acc, val) => acc + val,
         0
       );
-      const newC0Percentage = Math.round((counts["c0"] / totalCount) * 100);
+      var newC0Percentage = Math.round((counts["c0"] / totalCount) * 100);
+      var c1 = 0, c2 = 0, c3 = 0, c4=0;
+      if(counts["c1"] == 0){
+        c1 = 2;
+      } 
+      else if(counts["c1"] == 1){
+        c1 = 1;
+      } 
+      else if(counts["c1"] >= 2){
+        c1 = 0;
+      }
+
+      if(counts["c2"] == 0){
+        c2 = 2;
+      } 
+      else if(counts["c2"] == 1){
+        c2 = 1;
+      } 
+      else if(counts["c2"] >= 2){
+        c2 = 0;
+      }
+
+      if(counts["c3"] == 0){
+        c3 = 2;
+      } 
+      else if(counts["c3"] == 1){
+        c3 = 1;
+      } 
+      else if(counts["c3"] >= 2){
+        c3 = 0;
+      }
+
+      if(counts["c4"] == 0){
+        c4 = 2;
+      } 
+      else if(counts["c4"] == 1){
+        c4 = 1;
+      } 
+      else if(counts["c4"] >= 2){
+        c4 = 0;
+      }
+      newC0Percentage = ((c1 + c2 + c3 + c4) / 8) * 100;
+
       console.log(counts["c0"]);
       console.log(totalCount);
       setC0Percentage(newC0Percentage);
